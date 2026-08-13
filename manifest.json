@@ -1,0 +1,55 @@
+{
+  "name": "Secure Locker - Cloud Vault",
+  "short_name": "SecureLocker",
+  "description": "High-security encrypted digital cloud storage vault for files, documents, and media.",
+  "start_url": "login.php",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#061d48",
+  "theme_color": "#061d48",
+  "categories": ["productivity", "utilities", "security"],
+  "icons": [
+    {
+      "src": "assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/images/icon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View cloud vault dashboard",
+      "url": "dashboard.php?section=dashboard",
+      "icons": [{ "src": "assets/images/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Files",
+      "short_name": "Files",
+      "description": "Browse encrypted files",
+      "url": "dashboard.php?section=files",
+      "icons": [{ "src": "assets/images/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Upload File",
+      "short_name": "Upload",
+      "description": "Upload new files to vault",
+      "url": "dashboard.php?section=upload",
+      "icons": [{ "src": "assets/images/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

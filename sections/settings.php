@@ -168,6 +168,20 @@ if (!in_array($current_theme, ['light', 'dark'])) {
                         </div>
                     </div>
                 </div>
+
+                <!-- PWA Mobile / Desktop App Card -->
+                <div class="sl-pwa-banner-card" style="margin-top: 28px; background: linear-gradient(135deg, #0b2d7a 0%, #061d48 100%); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 22px 24px; color: #ffffff; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <img src="assets/images/icon-192.png" alt="App Icon" style="width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.3)); border-radius: 12px;">
+                        <div>
+                            <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #ffffff;">Install Secure Locker App</h4>
+                            <p style="margin: 0; font-size: 13px; color: rgba(255,255,255,0.75);">Add Secure Locker to your home screen or desktop for fast, standalone offline access.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="pwa-install-btn btn-primary" onclick="installPWA()" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; border: none; padding: 10px 22px; border-radius: 100px; font-weight: 600; font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(37,99,235,0.35);">
+                        <span>📲</span> Install App
+                    </button>
+                </div>
             </div>
 
             <!-- 2. RECYCLE BIN PANEL -->

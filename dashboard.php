@@ -205,15 +205,21 @@ if (!file_exists($section_file)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Locker - <?php echo htmlspecialchars(ucfirst($section)); ?></title>
-<style>
+    <!-- PWA Manifest & Mobile App Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#061d48">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SecureLocker">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
 
-</style>
-<link rel="stylesheet" href="css/dashboard-ui.css?v=<?php echo time(); ?>">
-<style>
-/* Essential inline fallback styles ensuring popup is hidden until triggered */
-.sl-google-card { display: none; }
-.sl-google-card.show { display: block !important; }
-</style>
+    <link rel="stylesheet" href="css/dashboard-ui.css?v=<?php echo time(); ?>">
+    <style>
+    /* Essential inline fallback styles ensuring popup is hidden until triggered */
+    .sl-google-card { display: none; }
+    .sl-google-card.show { display: block !important; }
+    </style>
 </head>
 <body>
    <header class="sl-header">
@@ -814,5 +820,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+<script src="js/pwa.js"></script>
 </body>
 </html>

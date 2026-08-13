@@ -108,8 +108,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign in | Secure Locker</title>
+    <!-- PWA Manifest & Mobile App Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#061d48">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SecureLocker">
+    <link rel="apple-touch-icon" href="assets/images/icon-192.png">
     <style>
         /* ===== GOOGLE / MODERN RESET & STYLES ===== */
         * {
@@ -562,5 +569,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         });
     </script>
+    <script src="js/pwa.js"></script>
 </body>
 </html>
