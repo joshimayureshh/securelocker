@@ -1,0 +1,19 @@
+# Ignore uploaded user files (security & privacy)
+uploads/*
+!uploads/.gitkeep
+
+# Ignore runtime server logs
+logs/*
+!logs/.gitkeep
+
+# Ignore scratch / debug files
+scratch/
+test_smtp.php
+
+# Ignore OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tmp
+*.bak
