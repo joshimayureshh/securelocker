@@ -271,17 +271,19 @@ if (!in_array($current_theme, ['light', 'dark'])) {
 }
 
 .sl-settings-page .sl-page-header {
-    max-width: 1180px;
-    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 24px 0;
 }
 
 .sl-settings-layout {
     display: grid;
     grid-template-columns: 240px 1fr;
-    max-width: 1180px;
+    width: 100%;
+    max-width: 100%;
     gap: 28px;
     align-items: start;
-    justify-content: start;
+    justify-content: stretch;
     margin: 0;
 }
 
@@ -439,10 +441,11 @@ body.dark-theme .panel-section-header p {
 /* THEME MOCKUPS GRID */
 .sl-theme-mockups-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(280px, 380px));
-    gap: 22px;
-    max-width: 820px;
-    justify-content: start;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 100%;
+    justify-content: stretch;
     margin: 0;
 }
 
