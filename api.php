@@ -171,23 +171,54 @@ try {
             ob_end_clean();
         }
         
-        // Check if it's a viewable file type in browser
-        $viewable_types = [
-            'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-            'application/pdf',
-            'text/plain', 'text/html', 'text/css', 'text/javascript',
-            'application/json'
+        // Comprehensive MIME type mapping
+        $ext = strtolower(pathinfo($file['file_name'], PATHINFO_EXTENSION));
+        $mime_map = [
+            // Video
+            'mp4' => 'video/mp4',
+            'webm' => 'video/webm',
+            'ogg' => 'video/ogg',
+            'mov' => 'video/quicktime',
+            'mkv' => 'video/x-matroska',
+            // Audio
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'aac' => 'audio/aac',
+            'm4a' => 'audio/mp4',
+            'flac' => 'audio/flac',
+            // Images
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'svg' => 'image/svg+xml',
+            'bmp' => 'image/bmp',
+            'ico' => 'image/x-icon',
+            // Documents & Code
+            'pdf' => 'application/pdf',
+            'txt' => 'text/plain; charset=utf-8',
+            'html' => 'text/html; charset=utf-8',
+            'css' => 'text/css; charset=utf-8',
+            'js' => 'application/javascript; charset=utf-8',
+            'json' => 'application/json; charset=utf-8',
+            'php' => 'text/plain; charset=utf-8',
+            'py' => 'text/plain; charset=utf-8',
+            'sql' => 'text/plain; charset=utf-8',
+            'md' => 'text/plain; charset=utf-8',
+            'csv' => 'text/plain; charset=utf-8'
         ];
         
-        if (in_array($file['file_type'], $viewable_types)) {
-            // Display in browser
-            header('Content-Type: ' . $file['file_type']);
+        $content_type = $mime_map[$ext] ?? $file['file_type'] ?? 'application/octet-stream';
+        $is_viewable = isset($mime_map[$ext]) || strpos($content_type, 'image/') === 0 || strpos($content_type, 'video/') === 0 || strpos($content_type, 'audio/') === 0 || $content_type === 'application/pdf' || strpos($content_type, 'text/') === 0;
+        
+        if ($is_viewable) {
+            header('Content-Type: ' . $content_type);
             header('Content-Disposition: inline; filename="' . addslashes($file['file_name']) . '"');
+            header('Accept-Ranges: bytes');
             header('Content-Length: ' . strlen($decrypted));
-            header('Cache-Control: public, max-age=86400');
-            header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 86400) . ' GMT');
+            header('Cache-Control: private, max-age=3600');
         } else {
-            // Force download for non-viewable types
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename="' . addslashes($file['file_name']) . '"');
             header('Content-Length: ' . strlen($decrypted));
@@ -197,7 +228,7 @@ try {
         header('Pragma: public');
         header('Expires: 0');
         
-        // Output the file
+        // Output the decrypted file stream
         echo $decrypted;
         exit;
     }

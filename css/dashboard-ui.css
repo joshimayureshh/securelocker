@@ -8515,4 +8515,412 @@ body.dark-theme .modal-close:hover {
         padding: 18px 14px !important;
         width: 95vw !important;
     }
+}
+
+/* =========================================================
+   IN-BROWSER FILE PREVIEW MODAL & VIDEO PLAYER
+========================================================= */
+.sl-preview-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(4, 11, 26, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 1;
+    animation: slFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sl-preview-modal-box {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 980px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slScaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body.dark-theme .sl-preview-modal-box {
+    background: #091224;
+    border-color: #1e2e4f;
+}
+
+@keyframes slFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slScaleUp {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.sl-preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1.5px solid #e2e8f0;
+    background: #f8faff;
+    gap: 16px;
+}
+
+body.dark-theme .sl-preview-header {
+    background: #0c1833;
+    border-bottom-color: #1e2e4f;
+}
+
+.sl-preview-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.sl-preview-file-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.sl-preview-filename {
+    font-size: 16px;
+    font-weight: 750;
+    color: #0f172a;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 480px;
+}
+
+body.dark-theme .sl-preview-filename {
+    color: #f1f5f9;
+}
+
+.sl-preview-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+    display: block;
+}
+
+body.dark-theme .sl-preview-meta {
+    color: #94a3b8;
+}
+
+.sl-preview-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.sl-preview-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+body.dark-theme .sl-preview-tool-btn {
+    background: #17233f;
+    border-color: #2c3e66;
+    color: #cbd5e1;
+}
+
+.sl-preview-tool-btn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #2563eb;
+}
+
+.sl-preview-tool-btn.primary {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.sl-preview-tool-btn.primary:hover {
+    background: #1d4ed8;
+}
+
+.sl-preview-close-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    font-size: 22px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    line-height: 1;
+}
+
+.sl-preview-close-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+body.dark-theme .sl-preview-close-btn:hover {
+    background: #3c1212;
+    color: #f87171;
+}
+
+/* PREVIEW BODY */
+.sl-preview-body {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0d1527;
+    min-height: 380px;
+    max-height: calc(90vh - 72px);
+}
+
+.sl-preview-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.sl-preview-spinner {
+    width: 38px;
+    height: 38px;
+    border: 3.5px solid rgba(255, 255, 255, 0.15);
+    border-top-color: #38bdf8;
+    border-radius: 50%;
+    animation: slSpin 0.7s linear infinite;
+}
+
+@keyframes slSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* VIDEO PLAYER WRAPPER */
+.sl-video-player-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.sl-embedded-video {
+    width: 100%;
+    max-height: 68vh;
+    border-radius: 14px;
+    background: #000000;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    outline: none;
+}
+
+.sl-player-bar-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #94a3b8;
+    padding: 0 4px;
+}
+
+/* IMAGE PREVIEW */
+.sl-image-preview-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.sl-embedded-image {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+}
+
+/* PDF PREVIEW */
+.sl-pdf-preview-wrap {
+    width: 100%;
+    height: 75vh;
+    min-height: 480px;
+}
+
+.sl-embedded-pdf {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+/* AUDIO PLAYER */
+.sl-audio-player-wrap {
+    background: #17233f;
+    border: 1.5px solid #283a61;
+    border-radius: 18px;
+    padding: 36px 30px;
+    text-align: center;
+    width: 100%;
+    max-width: 480px;
+    color: #ffffff;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.audio-disc-icon {
+    font-size: 52px;
+    margin-bottom: 12px;
+    animation: slDiscPulse 2s ease-in-out infinite;
+}
+
+@keyframes slDiscPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+.sl-audio-player-wrap h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    word-break: break-all;
+}
+
+.sl-audio-player-wrap p {
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin: 0 0 18px;
+}
+
+/* TEXT / CODE PREVIEW */
+.sl-text-preview-wrap {
+    width: 100%;
+    max-height: 72vh;
+    background: #090f1d;
+    border: 1.5px solid #1a2947;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.sl-text-preview-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #111a2f;
+    border-bottom: 1px solid #1a2947;
+    font-size: 12.5px;
+    color: #94a3b8;
+}
+
+.btn-copy-code {
+    background: #1c2b4d;
+    border: 1px solid #2c4270;
+    color: #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.btn-copy-code:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.sl-code-block {
+    padding: 16px;
+    margin: 0;
+    overflow: auto;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #38bdf8;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* UNSUPPORTED BINARY */
+.sl-unsupported-preview {
+    text-align: center;
+    padding: 30px 20px;
+    color: #ffffff;
+    max-width: 440px;
+}
+
+.unsupported-icon {
+    font-size: 54px;
+    margin-bottom: 14px;
+}
+
+.sl-unsupported-preview h3 {
+    font-size: 17px;
+    margin: 0 0 8px;
+    word-break: break-all;
+}
+
+.sl-unsupported-preview p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0 0 20px;
+}
+
+@media (max-width: 768px) {
+    .sl-preview-modal-box {
+        max-height: 96vh;
+        border-radius: 16px;
+    }
+
+    .sl-preview-header {
+        padding: 12px 14px;
+    }
+
+    .sl-preview-filename {
+        max-width: 180px;
+        font-size: 14.5px;
+    }
+
+    .sl-preview-tool-btn span {
+        display: none;
+    }
+
+    .sl-preview-tool-btn {
+        padding: 7px 9px;
+    }
+
+    .sl-preview-body {
+        padding: 14px;
+        min-height: 280px;
+    }
 }

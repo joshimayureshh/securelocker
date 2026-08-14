@@ -184,7 +184,7 @@ $first_name = !empty($name_parts[0]) ? $name_parts[0] : $formatted_name;
                             <button
                                 type="button"
                                 class="sl-action-btn view"
-                                onclick="viewFile(<?php echo $file['id']; ?>, '<?php echo htmlspecialchars($file['file_name'], ENT_QUOTES); ?>')"
+                                onclick="viewFile(<?php echo $file['id']; ?>, '<?php echo htmlspecialchars($file['file_name'], ENT_QUOTES); ?>', '<?php echo formatFileSize($file['file_size']); ?>')"
                                 title="View in Browser">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
@@ -215,10 +215,6 @@ $first_name = !empty($name_parts[0]) ? $name_parts[0] : $formatted_name;
 <script>
 function downloadFile(fileId) {
     window.location.href = 'api.php?action=download&id=' + fileId;
-}
-
-function viewFile(fileId, fileName) {
-    window.open('api.php?action=view&id=' + fileId, '_blank');
 }
 
 function deleteFile(fileId, fileName) {

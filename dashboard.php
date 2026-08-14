@@ -478,6 +478,43 @@ if (!file_exists($section_file)) {
     </div>
 </div>
 
+<!-- =========================================================
+     IN-BROWSER FILE PREVIEW MODAL (SAME WINDOW)
+========================================================= -->
+<div id="slFilePreviewModal" class="sl-preview-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="previewModalFileName">
+    <div class="sl-preview-modal-box">
+        <!-- Top Toolbar -->
+        <div class="sl-preview-header">
+            <div class="sl-preview-title-wrap">
+                <span class="sl-preview-file-icon" id="previewModalFileIcon">📄</span>
+                <div>
+                    <h3 class="sl-preview-filename" id="previewModalFileName">File Name</h3>
+                    <span class="sl-preview-meta" id="previewModalFileMeta">Type &bull; Size</span>
+                </div>
+            </div>
+            <div class="sl-preview-header-actions">
+                <button type="button" class="sl-preview-tool-btn" id="previewOpenTabBtn" title="Open in new browser tab">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    <span>New Tab</span>
+                </button>
+                <button type="button" class="sl-preview-tool-btn primary" id="previewDownloadBtn" title="Download Decrypted File">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Download</span>
+                </button>
+                <button type="button" class="sl-preview-close-btn" onclick="closeFilePreviewModal()" aria-label="Close preview">&times;</button>
+            </div>
+        </div>
+
+        <!-- Main Preview Body -->
+        <div class="sl-preview-body" id="previewModalBody">
+            <div class="sl-preview-loading">
+                <div class="sl-preview-spinner"></div>
+                <p>Decrypting &amp; preparing preview...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // ==========================================
 // GLOBAL DRAWERS (RECYCLE BIN & APPEARANCE)
@@ -741,9 +778,170 @@ function deleteFile(fileId, fileName) {
     }
 }
 
-// View file function
-function viewFile(fileId, fileName) {
-    window.open('api.php?action=view&id=' + fileId, '_blank');
+// =========================================================
+// IN-BROWSER FILE PREVIEW CONTROLLER (SAME WINDOW)
+// =========================================================
+function viewFile(fileId, fileName, fileSize) {
+    const modal = document.getElementById('slFilePreviewModal');
+    if (!modal) {
+        window.open('api.php?action=view&id=' + fileId, '_blank');
+        return;
+    }
+
+    const titleEl = document.getElementById('previewModalFileName');
+    const metaEl = document.getElementById('previewModalFileMeta');
+    const iconEl = document.getElementById('previewModalFileIcon');
+    const bodyEl = document.getElementById('previewModalBody');
+    const newTabBtn = document.getElementById('previewOpenTabBtn');
+    const downloadBtn = document.getElementById('previewDownloadBtn');
+
+    const ext = (fileName.split('.').pop() || '').toLowerCase();
+    const viewUrl = 'api.php?action=view&id=' + fileId;
+    const downloadUrl = 'api.php?action=download&id=' + fileId;
+
+    if (titleEl) titleEl.textContent = fileName;
+    if (metaEl) metaEl.textContent = (ext ? ext.toUpperCase() + ' File' : 'Vault File') + (fileSize ? ' • ' + fileSize : '');
+
+    if (newTabBtn) {
+        newTabBtn.onclick = () => window.open(viewUrl, '_blank');
+    }
+    if (downloadBtn) {
+        downloadBtn.onclick = () => window.location.href = downloadUrl;
+    }
+
+    // Supported Extension Categories
+    const videoExts = ['mp4', 'webm', 'ogg', 'mov', 'mkv'];
+    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+    const audioExts = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac'];
+    const textExts = ['txt', 'md', 'json', 'js', 'html', 'css', 'php', 'py', 'sql', 'csv', 'xml', 'sh'];
+
+    bodyEl.innerHTML = `
+        <div class="sl-preview-loading">
+            <div class="sl-preview-spinner"></div>
+            <p>Decrypting &amp; preparing preview...</p>
+        </div>
+    `;
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // 1. VIDEO (MP4, WEBM, OGG, MOV, MKV)
+    if (videoExts.includes(ext)) {
+        if (iconEl) iconEl.textContent = '🎬';
+        const videoMime = ext === 'mov' ? 'video/quicktime' : (ext === 'mkv' ? 'video/x-matroska' : 'video/' + ext);
+        bodyEl.innerHTML = `
+            <div class="sl-video-player-wrap">
+                <video id="slEmbeddedVideo" class="sl-embedded-video" controls controlsList="nodownload" autoplay playsinline preload="auto">
+                    <source src="${viewUrl}" type="${videoMime}">
+                    Your browser does not support HTML5 video playback.
+                </video>
+                <div class="sl-player-bar-label">
+                    <span>🔒 AES-256 Decrypted Video Stream</span>
+                    <span>HD Media Player</span>
+                </div>
+            </div>
+        `;
+    } 
+    // 2. IMAGES
+    else if (imageExts.includes(ext)) {
+        if (iconEl) iconEl.textContent = '🖼️';
+        bodyEl.innerHTML = `
+            <div class="sl-image-preview-wrap">
+                <img src="${viewUrl}" alt="${escapeHtml(fileName)}" class="sl-embedded-image">
+            </div>
+        `;
+    } 
+    // 3. PDF DOCUMENTS
+    else if (ext === 'pdf') {
+        if (iconEl) iconEl.textContent = '📄';
+        bodyEl.innerHTML = `
+            <div class="sl-pdf-preview-wrap">
+                <iframe src="${viewUrl}#toolbar=1" class="sl-embedded-pdf" title="${escapeHtml(fileName)}"></iframe>
+            </div>
+        `;
+    } 
+    // 4. AUDIO FILES
+    else if (audioExts.includes(ext)) {
+        if (iconEl) iconEl.textContent = '🎵';
+        bodyEl.innerHTML = `
+            <div class="sl-audio-player-wrap">
+                <div class="audio-disc-icon">🎧</div>
+                <h4>${escapeHtml(fileName)}</h4>
+                <p>Decrypted Audio Stream</p>
+                <audio controls autoplay style="width: 100%; max-width: 440px; margin-top: 14px;">
+                    <source src="${viewUrl}" type="audio/${ext === 'mp3' ? 'mpeg' : ext}">
+                    Your browser does not support audio playback.
+                </audio>
+            </div>
+        `;
+    } 
+    // 5. TEXT & SOURCE CODE FILES
+    else if (textExts.includes(ext)) {
+        if (iconEl) iconEl.textContent = '📝';
+        fetch(viewUrl)
+            .then(res => res.text())
+            .then(text => {
+                const lineCount = text.split('\n').length;
+                bodyEl.innerHTML = `
+                    <div class="sl-text-preview-wrap">
+                        <div class="sl-text-preview-toolbar">
+                            <span>📄 ${lineCount} lines &bull; UTF-8</span>
+                            <button type="button" class="btn-copy-code" onclick="copyPreviewText()">📋 Copy Content</button>
+                        </div>
+                        <pre class="sl-code-block"><code id="previewTextContent">${escapeHtml(text)}</code></pre>
+                    </div>
+                `;
+            })
+            .catch(err => {
+                bodyEl.innerHTML = `<div class="sl-preview-loading" style="color: #ef4444;"><p>Failed to load text preview: ${escapeHtml(err.message)}</p></div>`;
+            });
+    } 
+    // 6. OTHER BINARY / ARCHIVES
+    else {
+        if (iconEl) iconEl.textContent = '📦';
+        bodyEl.innerHTML = `
+            <div class="sl-unsupported-preview">
+                <div class="unsupported-icon">📁</div>
+                <h3>${escapeHtml(fileName)}</h3>
+                <p>In-browser preview is not supported for <strong>.${ext.toUpperCase()}</strong> files.</p>
+                <button type="button" class="sl-hero-btn primary" onclick="window.location.href='${downloadUrl}'" style="margin: 0 auto;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span>Download Decrypted File</span>
+                </button>
+            </div>
+        `;
+    }
+}
+
+function closeFilePreviewModal() {
+    const modal = document.getElementById('slFilePreviewModal');
+    if (modal) {
+        // Pause any video or audio playing inside modal
+        const video = modal.querySelector('video');
+        if (video) video.pause();
+        const audio = modal.querySelector('audio');
+        if (audio) audio.pause();
+
+        const bodyEl = document.getElementById('previewModalBody');
+        if (bodyEl) bodyEl.innerHTML = '';
+
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function copyPreviewText() {
+    const codeEl = document.getElementById('previewTextContent');
+    if (!codeEl) return;
+    navigator.clipboard.writeText(codeEl.textContent).then(() => {
+        const btn = document.querySelector('.btn-copy-code');
+        if (btn) {
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => { btn.textContent = '📋 Copy Content'; }, 2000);
+        }
+    }).catch(() => {
+        alert('Failed to copy text.');
+    });
 }
 
 // Favorite toggle function
@@ -811,9 +1009,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Close drawers / dropdown on Escape key
+    // Close preview modal on clicking backdrop
+    const previewModal = document.getElementById('slFilePreviewModal');
+    if (previewModal) {
+        previewModal.addEventListener('click', function(e) {
+            if (e.target === previewModal) {
+                closeFilePreviewModal();
+            }
+        });
+    }
+
+    // Close drawers / dropdown / preview modal on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
+            closeFilePreviewModal();
             closeAllDrawers();
             closeUserDropdown();
         }

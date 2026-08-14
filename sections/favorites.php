@@ -86,7 +86,7 @@ $fav_count = count($favorite_files);
 
                     <div class="sl-card-actions">
                         <button type="button" 
-                                onclick="viewFile(<?php echo $file['id']; ?>, '<?php echo htmlspecialchars($file['file_name'], ENT_QUOTES); ?>')" 
+                                onclick="viewFile(<?php echo $file['id']; ?>, '<?php echo htmlspecialchars($file['file_name'], ENT_QUOTES); ?>', '<?php echo formatFileSize($file['file_size']); ?>')" 
                                 class="sl-btn-action view" 
                                 title="View in Browser">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px; margin-right: 4px; display: inline-block; vertical-align: middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> View
@@ -113,10 +113,6 @@ $fav_count = count($favorite_files);
 <script>
 function downloadFile(fileId) {
     window.location.href = 'api.php?action=download&id=' + fileId;
-}
-
-function viewFile(fileId, fileName) {
-    window.open('api.php?action=view&id=' + fileId, '_blank');
 }
 
 function toggleFavorite(fileId) {
