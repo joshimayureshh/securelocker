@@ -404,6 +404,133 @@ try {
         exit;
     }
 
+    /* ===== CREATE EXPIRING SHARE LINK ===== */
+    if ($action === 'create_share_link') {
+        header('Content-Type: application/json');
+        $file_id = intval($_POST['file_id'] ?? $_GET['file_id'] ?? 0);
+        $duration = intval($_POST['duration'] ?? $_GET['duration'] ?? 15); // Duration in minutes (10, 15, 60, 1440, etc.)
+        $burn_after_download = !empty($_POST['burn']) || !empty($_GET['burn']);
+        $max_downloads = $burn_after_download ? 1 : null;
+
+        if (!$file_id) {
+            echo json_encode(['success' => false, 'message' => 'Invalid file ID']);
+            exit;
+        }
+
+        // Validate allowed durations (between 1 minute and 30 days)
+        if ($duration < 1 || $duration > 43200) {
+            $duration = 15;
+        }
+
+        // Verify file ownership
+        $stmt = $db->prepare("SELECT id, file_name, file_size FROM files WHERE id = :id AND user_id = :user_id AND deleted_at IS NULL");
+        $stmt->execute([':id' => $file_id, ':user_id' => $user_id]);
+        $file = $stmt->fetch();
+
+        if (!$file) {
+            echo json_encode(['success' => false, 'message' => 'File not found or access denied']);
+            exit;
+        }
+
+        // Generate 48-char random token
+        $token = bin2hex(random_bytes(24));
+
+        // Insert into file_shares with dynamic expiration interval
+        $stmt = $db->prepare("
+            INSERT INTO file_shares (file_id, user_id, share_token, expires_at, max_downloads, download_count)
+            VALUES (:file_id, :user_id, :token, CURRENT_TIMESTAMP + (:duration || ' minutes')::INTERVAL, :max_downloads, 0)
+            RETURNING id, share_token, expires_at, max_downloads
+        ");
+        $stmt->execute([
+            ':file_id' => $file_id,
+            ':user_id' => $user_id,
+            ':token' => $token,
+            ':duration' => $duration,
+            ':max_downloads' => $max_downloads
+        ]);
+        $share = $stmt->fetch();
+
+        // Build full shareable URL
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? '') == 443) ? "https://" : "http://";
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $script_dir = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+        $share_url = $protocol . $host . $script_dir . '/share.php?token=' . $token;
+
+        if (function_exists('logActivity')) {
+            logActivity($user_id, 'share_link_created', "Created {$duration}-minute share link for file '{$file['file_name']}'");
+        }
+
+        echo json_encode([
+            'success' => true,
+            'share_id' => $share['id'],
+            'file_name' => $file['file_name'],
+            'share_token' => $token,
+            'share_url' => $share_url,
+            'duration_minutes' => $duration,
+            'expires_at' => $share['expires_at'],
+            'burn_after_download' => $burn_after_download,
+            'formatted_expires' => date('M d, Y h:i A', strtotime($share['expires_at']))
+        ]);
+        exit;
+    }
+
+    /* ===== GET ACTIVE FILE SHARES ===== */
+    if ($action === 'get_file_shares') {
+        header('Content-Type: application/json');
+        $file_id = intval($_GET['file_id'] ?? 0);
+
+        if (!$file_id) {
+            echo json_encode(['success' => false, 'message' => 'Invalid file ID']);
+            exit;
+        }
+
+        $stmt = $db->prepare("
+            SELECT id, share_token, expires_at, max_downloads, download_count, created_at,
+                   (expires_at > CURRENT_TIMESTAMP) as is_active,
+                   ROUND(EXTRACT(EPOCH FROM (expires_at - CURRENT_TIMESTAMP))/60) as remaining_minutes
+            FROM file_shares
+            WHERE file_id = :file_id AND user_id = :user_id AND expires_at > CURRENT_TIMESTAMP
+            ORDER BY created_at DESC
+        ");
+        $stmt->execute([':file_id' => $file_id, ':user_id' => $user_id]);
+        $shares = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || ($_SERVER['SERVER_PORT'] ?? '') == 443) ? "https://" : "http://";
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $script_dir = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
+
+        foreach ($shares as &$s) {
+            $s['share_url'] = $protocol . $host . $script_dir . '/share.php?token=' . $s['share_token'];
+            $s['formatted_expires'] = date('M d, Y h:i A', strtotime($s['expires_at']));
+        }
+
+        echo json_encode([
+            'success' => true,
+            'shares' => $shares
+        ]);
+        exit;
+    }
+
+    /* ===== REVOKE / DELETE SHARE LINK ===== */
+    if ($action === 'revoke_share_link') {
+        header('Content-Type: application/json');
+        $share_id = intval($_POST['share_id'] ?? $_GET['share_id'] ?? 0);
+
+        if (!$share_id) {
+            echo json_encode(['success' => false, 'message' => 'Invalid share ID']);
+            exit;
+        }
+
+        $stmt = $db->prepare("DELETE FROM file_shares WHERE id = :share_id AND user_id = :user_id");
+        $stmt->execute([':share_id' => $share_id, ':user_id' => $user_id]);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Share link revoked immediately'
+        ]);
+        exit;
+    }
+
     /* ===== SAVE THEME ===== */
     if ($action === 'save_theme') {
         header('Content-Type: application/json');

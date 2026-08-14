@@ -39,7 +39,19 @@ CREATE TABLE files (
     CONSTRAINT check_iv_length CHECK (iv IS NULL OR LENGTH(iv) = 32)
 );
 
--- 3. Activities table for logging (simplified)
+-- 3. File Shares table for temporary expiring public links
+CREATE TABLE file_shares (
+    id SERIAL PRIMARY KEY,
+    file_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    share_token VARCHAR(64) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    max_downloads INTEGER DEFAULT NULL,
+    download_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Activities table for logging (simplified)
 CREATE TABLE activities (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

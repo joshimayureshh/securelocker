@@ -8923,4 +8923,119 @@ body.dark-theme .sl-preview-close-btn:hover {
         padding: 14px;
         min-height: 280px;
     }
+}
+
+/* =========================================================
+   EXPIRING FILE SHARE MODAL STYLING
+========================================================= */
+.sl-share-durations-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+@media (max-width: 540px) {
+    .sl-share-durations-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.duration-chip {
+    padding: 10px 8px;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+body.dark-theme .duration-chip {
+    background: #132448;
+    border-color: #1e3a70;
+    color: #cbd5e1;
+}
+
+.duration-chip:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+body.dark-theme .duration-chip:hover {
+    background: #172d5c;
+    color: #60a5fa;
+}
+
+.duration-chip.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+body.dark-theme .duration-chip.active {
+    background: #2563eb;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+body.dark-theme #shareModalInnerContent {
+    background: #0b172e !important;
+}
+
+body.dark-theme #shareResultBox {
+    background: #08281b !important;
+    border-color: #10b981 !important;
+}
+
+body.dark-theme #shareResultExpiryText {
+    color: #34d399 !important;
+}
+
+body.dark-theme #shareGeneratedUrl {
+    background: #0f1f3d !important;
+    border-color: #1e3863 !important;
+    color: #f1f5f9 !important;
+}
+
+.active-share-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+body.dark-theme .active-share-item {
+    background: #132448;
+    border-color: #1e3a70;
+    color: #e2e8f0;
+}
+
+.btn-revoke-share {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+body.dark-theme .btn-revoke-share {
+    background: #3b1414;
+    color: #f87171;
+}
+
+.btn-revoke-share:hover {
+    background: #dc2626;
+    color: #ffffff;
 }

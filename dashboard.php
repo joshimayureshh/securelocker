@@ -515,6 +515,80 @@ if (!file_exists($section_file)) {
     </div>
 </div>
 
+<!-- =========================================================
+     EXPIRING FILE SHARE MODAL (SAME WINDOW)
+========================================================= -->
+<div id="slFileShareModal" class="sl-preview-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="shareModalFileName">
+    <div class="sl-preview-modal-box" style="max-width: 520px;">
+        <div class="sl-preview-header">
+            <div class="sl-preview-title-wrap">
+                <span class="sl-preview-file-icon">🔗</span>
+                <div>
+                    <h3 class="sl-preview-filename" id="shareModalFileName">Share File</h3>
+                    <span class="sl-preview-meta" id="shareModalFileMeta">Expiring Link Generator</span>
+                </div>
+            </div>
+            <button type="button" class="sl-preview-close-btn" onclick="closeShareModal()" aria-label="Close modal">&times;</button>
+        </div>
+
+        <div style="padding: 24px; background: #ffffff;" id="shareModalInnerContent">
+            <input type="hidden" id="shareFileId" value="">
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 13.5px; font-weight: 700; color: #1e293b; margin-bottom: 8px;">
+                    Link Expiration Lifetime
+                </label>
+                <div class="sl-share-durations-grid">
+                    <button type="button" class="duration-chip active" data-duration="10" onclick="selectShareDuration(10, this)">
+                        <span>⚡ 10 Mins</span>
+                    </button>
+                    <button type="button" class="duration-chip" data-duration="15" onclick="selectShareDuration(15, this)">
+                        <span>⏱️ 15 Mins</span>
+                    </button>
+                    <button type="button" class="duration-chip" data-duration="60" onclick="selectShareDuration(60, this)">
+                        <span>⏳ 1 Hour</span>
+                    </button>
+                    <button type="button" class="duration-chip" data-duration="1440" onclick="selectShareDuration(1440, this)">
+                        <span>📅 24 Hours</span>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 22px;">
+                <label style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="shareBurnCheck" style="width: 17px; height: 17px; accent-color: #2563eb; cursor: pointer;">
+                    <span>Self-destruct after 1 download (1-time access)</span>
+                </label>
+            </div>
+
+            <button type="button" class="sl-hero-btn primary" id="generateShareBtn" onclick="submitGenerateShareLink()" style="width: 100%; justify-content: center; height: 44px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                <span>Generate Expiring Link</span>
+            </button>
+
+            <!-- GENERATED LINK RESULT BOX -->
+            <div id="shareResultBox" style="display: none; margin-top: 20px; padding: 16px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-size: 12.5px; font-weight: 700; color: #166534;" id="shareResultExpiryText">✅ Link active</span>
+                    <span style="font-size: 11.5px; color: #15803d;">Encrypted Access</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="shareGeneratedUrl" readonly style="flex: 1; height: 40px; background: #ffffff; border: 1px solid #bbf7d0; border-radius: 10px; padding: 0 12px; font-family: monospace; font-size: 13px; color: #0f172a; outline: none;">
+                    <button type="button" class="sl-hero-btn primary" id="copyShareUrlBtn" onclick="copyGeneratedShareLink()" style="height: 40px; padding: 0 14px; flex-shrink: 0;">
+                        <span>Copy</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ACTIVE SHARES LIST FOR THIS FILE -->
+            <div id="activeSharesSection" style="margin-top: 22px; padding-top: 16px; border-top: 1px solid #e2e8f0; display: none;">
+                <h4 style="font-size: 12.5px; font-weight: 700; color: #475569; margin-bottom: 10px;">Active Links for this file:</h4>
+                <div id="activeSharesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // ==========================================
 // GLOBAL DRAWERS (RECYCLE BIN & APPEARANCE)
@@ -944,6 +1018,154 @@ function copyPreviewText() {
     });
 }
 
+// ==========================================
+// EXPIRING SHARE LINK CONTROLLER
+// ==========================================
+let currentShareDuration = 10;
+
+function openShareModal(fileId, fileName, fileSize) {
+    document.getElementById('shareFileId').value = fileId;
+    document.getElementById('shareModalFileName').textContent = fileName;
+    document.getElementById('shareModalFileMeta').textContent = 'Share • ' + (fileSize || 'Vault File');
+    
+    // Reset inputs
+    document.getElementById('shareResultBox').style.display = 'none';
+    document.getElementById('shareGeneratedUrl').value = '';
+    document.getElementById('shareBurnCheck').checked = false;
+    currentShareDuration = 10;
+    
+    document.querySelectorAll('.duration-chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.duration === '10');
+    });
+
+    const modal = document.getElementById('slFileShareModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    loadActiveShares(fileId);
+}
+
+function closeShareModal() {
+    const modal = document.getElementById('slFileShareModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function selectShareDuration(mins, btn) {
+    currentShareDuration = mins;
+    document.querySelectorAll('.duration-chip').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+async function submitGenerateShareLink() {
+    const fileId = document.getElementById('shareFileId').value;
+    const isBurn = document.getElementById('shareBurnCheck').checked;
+    const btn = document.getElementById('generateShareBtn');
+
+    if (!fileId) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span>Generating Secure Link...</span>';
+
+    try {
+        const formData = new FormData();
+        formData.append('action', 'create_share_link');
+        formData.append('file_id', fileId);
+        formData.append('duration', currentShareDuration);
+        if (isBurn) formData.append('burn', '1');
+
+        const res = await fetch('api.php?action=create_share_link', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            const resultBox = document.getElementById('shareResultBox');
+            const urlInput = document.getElementById('shareGeneratedUrl');
+            const expiryText = document.getElementById('shareResultExpiryText');
+
+            urlInput.value = data.share_url;
+            expiryText.textContent = `✅ Link active for ${data.duration_minutes} minutes (${data.formatted_expires})`;
+            resultBox.style.display = 'block';
+
+            // Copy to clipboard automatically
+            urlInput.select();
+            navigator.clipboard.writeText(data.share_url).catch(() => {});
+
+            const copyBtn = document.getElementById('copyShareUrlBtn');
+            if (copyBtn) {
+                copyBtn.innerHTML = '<span>✅ Copied!</span>';
+                setTimeout(() => { copyBtn.innerHTML = '<span>Copy</span>'; }, 2500);
+            }
+
+            loadActiveShares(fileId);
+        } else {
+            alert(data.message || 'Failed to create share link.');
+        }
+    } catch (err) {
+        alert('Network error: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><span>Generate Expiring Link</span>';
+    }
+}
+
+function copyGeneratedShareLink() {
+    const urlInput = document.getElementById('shareGeneratedUrl');
+    if (!urlInput || !urlInput.value) return;
+    urlInput.select();
+    navigator.clipboard.writeText(urlInput.value).then(() => {
+        const copyBtn = document.getElementById('copyShareUrlBtn');
+        if (copyBtn) {
+            copyBtn.innerHTML = '<span>✅ Copied!</span>';
+            setTimeout(() => { copyBtn.innerHTML = '<span>Copy</span>'; }, 2000);
+        }
+    });
+}
+
+function loadActiveShares(fileId) {
+    const sec = document.getElementById('activeSharesSection');
+    const list = document.getElementById('activeSharesList');
+    if (!sec || !list) return;
+
+    fetch(`api.php?action=get_file_shares&file_id=${fileId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.shares && data.shares.length > 0) {
+                sec.style.display = 'block';
+                list.innerHTML = data.shares.map(s => `
+                    <div class="active-share-item" id="share-item-${s.id}">
+                        <div>
+                            <strong>⏱️ ${s.remaining_minutes > 0 ? s.remaining_minutes + ' mins left' : 'Expiring now'}</strong>
+                            <span style="color: #64748b; font-size: 11px; margin-left: 6px;">(${s.max_downloads ? '1-time download' : 'Downloads: ' + s.download_count})</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button type="button" class="btn-revoke-share" onclick="revokeShareLink(${s.id}, ${fileId})">Revoke</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                sec.style.display = 'none';
+                list.innerHTML = '';
+            }
+        })
+        .catch(() => {});
+}
+
+function revokeShareLink(shareId, fileId) {
+    if (!confirm('Revoke this share link immediately? The link will stop working right away.')) return;
+    fetch(`api.php?action=revoke_share_link&share_id=${shareId}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadActiveShares(fileId);
+            }
+        });
+}
+
 // Favorite toggle function
 function toggleFavorite(fileId) {
     fetch('api.php?action=toggle_favorite&id=' + fileId)
@@ -1019,10 +1241,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Close drawers / dropdown / preview modal on Escape key
+    // Close share modal on clicking backdrop
+    const shareModal = document.getElementById('slFileShareModal');
+    if (shareModal) {
+        shareModal.addEventListener('click', function(e) {
+            if (e.target === shareModal) {
+                closeShareModal();
+            }
+        });
+    }
+
+    // Close drawers / dropdown / preview modal / share modal on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeFilePreviewModal();
+            closeShareModal();
             closeAllDrawers();
             closeUserDropdown();
         }
