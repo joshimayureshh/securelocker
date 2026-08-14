@@ -1,5 +1,5 @@
 <?php
-// share.php - Public Secure Expiring File Share Landing & Download Page
+// share.php - Modern, Premium Public File Share & Streaming Page
 require_once 'config.php';
 
 $token = trim($_GET['token'] ?? '');
@@ -9,7 +9,6 @@ $is_view = isset($_GET['view']) && $_GET['view'] == '1';
 $db = getDB();
 
 $share = null;
-$file = null;
 $error_type = null; // 'not_found', 'expired', 'limit_reached'
 $error_message = '';
 
@@ -32,21 +31,21 @@ if (!empty($token)) {
 
         if (!$share) {
             $error_type = 'not_found';
-            $error_message = 'This share link does not exist or the file was deleted by the owner.';
+            $error_message = 'This share link does not exist or the file was removed by its owner.';
         } elseif (!$share['is_valid_time'] || $share['seconds_left'] <= 0) {
             $error_type = 'expired';
-            $error_message = 'This temporary share link has expired. For security, files are inaccessible once their expiration period ends.';
+            $error_message = 'This temporary share link has expired. Secure Locker links automatically self-destruct for security.';
         } elseif ($share['max_downloads'] !== null && $share['download_count'] >= $share['max_downloads']) {
             $error_type = 'limit_reached';
-            $error_message = 'This 1-time download share link has already been downloaded and self-destructed.';
+            $error_message = 'This 1-time download link has already been downloaded and permanently expired.';
         }
     } catch (PDOException $e) {
         $error_type = 'server_error';
-        $error_message = 'A database error occurred: ' . $e->getMessage();
+        $error_message = 'A server error occurred: ' . $e->getMessage();
     }
 } else {
     $error_type = 'not_found';
-    $error_message = 'No share token provided. Please check your URL link.';
+    $error_message = 'No share token provided. Please verify the URL.';
 }
 
 // Handle Direct Download or Inline Stream
@@ -132,192 +131,275 @@ $can_preview = ($is_video || $is_image || $is_pdf || $is_audio || in_array($ext,
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $share ? htmlspecialchars($share['file_name']) . ' - Secure Locker' : 'Secure Link Expired - Secure Locker'; ?></title>
+    <title><?php echo $share ? htmlspecialchars($share['file_name']) . ' &bull; Secure Locker' : 'Link Expired &bull; Secure Locker'; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #061126;
-            --card-bg: #0b1a3a;
-            --border-color: #1e3360;
+            --bg-dark: #040d1e;
+            --card-glass: rgba(10, 22, 48, 0.88);
+            --card-border: rgba(59, 130, 246, 0.25);
             --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            --primary-glow: rgba(59, 130, 246, 0.45);
+            --text-title: #ffffff;
+            --text-sub: #94a3b8;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            background: var(--bg-base);
+            background-color: var(--bg-dark);
             background-image: 
-                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+                radial-gradient(at 15% 15%, rgba(37, 99, 235, 0.22) 0px, transparent 55%),
+                radial-gradient(at 85% 85%, rgba(139, 92, 246, 0.18) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.08) 0px, transparent 65%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            color: var(--text-main);
+            padding: 32px 20px;
+            color: var(--text-title);
         }
 
-        .share-container {
+        .share-wrapper {
             width: 100%;
-            max-width: 580px;
+            max-width: 680px;
+            margin: 0 auto;
         }
 
-        /* HEADER BRANDING */
-        .brand-header {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .brand-logo {
-            display: inline-flex;
+        /* BRAND HEADER */
+        .brand-nav {
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: 12px;
+            margin-bottom: 24px;
             text-decoration: none;
-            color: var(--text-main);
         }
 
-        .brand-logo-img {
-            width: 44px;
-            height: 44px;
+        .brand-nav-logo {
+            width: 40px;
+            height: 40px;
             border-radius: 12px;
-            object-fit: contain;
-            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
         }
 
-        .brand-title {
-            font-size: 22px;
+        .brand-nav-title {
+            font-size: 21px;
             font-weight: 800;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 0%, #93c5fd 100%);
+            background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         /* MAIN CARD */
-        .share-card {
-            background: var(--card-bg);
-            border: 1.5px solid var(--border-color);
-            border-radius: 24px;
-            padding: 36px 32px;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(16px);
-            text-align: center;
+        .share-card-container {
+            background: var(--card-glass);
+            border: 1.5px solid var(--card-border);
+            border-radius: 26px;
+            padding: 32px 30px;
+            box-shadow: 
+                0 30px 70px -15px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             position: relative;
             overflow: hidden;
-            animation: cardSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: modalFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes cardSlideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(18px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* COUNTDOWN TIMER BANNER */
-        .countdown-banner {
+        /* TOP STATUS BAR */
+        .card-status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 20px;
+            margin-bottom: 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+        }
+
+        .security-badge-tag {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            color: #fbbf24;
-            padding: 6px 16px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-
-        .countdown-banner.urgent {
-            background: rgba(239, 68, 68, 0.18);
-            border-color: rgba(239, 68, 68, 0.4);
-            color: #f87171;
-            animation: pulseBanner 1.5s infinite;
-        }
-
-        @keyframes pulseBanner {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* FILE ICON & DETAILS */
-        .file-icon-wrap {
-            width: 80px;
-            height: 80px;
-            background: rgba(59, 130, 246, 0.12);
-            border: 1.5px solid rgba(59, 130, 246, 0.25);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 18px;
-            font-size: 38px;
-        }
-
-        .file-name {
-            font-size: 20px;
-            font-weight: 750;
-            color: #ffffff;
-            margin-bottom: 8px;
-            word-break: break-all;
-            line-height: 1.35;
-        }
-
-        .file-meta-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 24px;
-        }
-
-        .meta-pill {
-            background: #132448;
-            padding: 4px 10px;
-            border-radius: 8px;
-            border: 1px solid #1e3360;
-            font-weight: 600;
-        }
-
-        /* SECURITY BADGE */
-        .security-badge {
-            display: flex;
-            align-items: center;
-            justify-content: center;
             gap: 8px;
             background: rgba(16, 185, 129, 0.12);
             border: 1px solid rgba(16, 185, 129, 0.3);
             color: #34d399;
-            padding: 10px 14px;
-            border-radius: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 12.5px;
-            font-weight: 600;
-            margin-bottom: 28px;
+            font-weight: 650;
         }
 
-        /* ACTION BUTTONS */
-        .actions-group {
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 10px var(--emerald);
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+        }
+
+        .timer-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(245, 158, 11, 0.14);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 750;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.2px;
+        }
+
+        .timer-badge-tag.urgent {
+            background: rgba(244, 63, 94, 0.18);
+            border-color: rgba(244, 63, 94, 0.45);
+            color: #fb7185;
+            animation: timerBlink 1s infinite alternate;
+        }
+
+        @keyframes timerBlink {
+            from { opacity: 1; }
+            to { opacity: 0.65; }
+        }
+
+        /* FILE INFO HEADER */
+        .file-info-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .file-type-avatar {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(139, 92, 246, 0.25));
+            border: 1.5px solid rgba(96, 165, 250, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-info-text {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-info-title {
+            font-size: 20px;
+            font-weight: 750;
+            color: #ffffff;
+            line-height: 1.35;
+            word-break: break-all;
+            margin-bottom: 4px;
+        }
+
+        .file-info-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12.5px;
+            color: var(--text-sub);
+            flex-wrap: wrap;
+        }
+
+        .meta-chip {
+            background: #112040;
+            border: 1px solid #1f3768;
+            padding: 2px 9px;
+            border-radius: 6px;
+            font-weight: 700;
+            color: #93c5fd;
+            font-size: 11.5px;
+            letter-spacing: 0.3px;
+        }
+
+        /* MEDIA PREVIEW CANVAS */
+        .media-showcase-canvas {
+            margin: 18px 0 24px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #030814;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-height: 380px;
+        }
+
+        .media-showcase-canvas img {
+            width: 100%;
+            height: auto;
+            max-height: 380px;
+            object-fit: contain;
+            display: block;
+            border-radius: 16px;
+        }
+
+        .media-showcase-canvas video {
+            width: 100%;
+            max-height: 380px;
+            display: block;
+            border-radius: 16px;
+            outline: none;
+        }
+
+        /* SELF DESTRUCT BANNER */
+        .burn-banner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fda4af;
+            padding: 9px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* ACTIONS */
+        .card-actions-layout {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .btn-download-primary {
+        .btn-main-download {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -327,221 +409,233 @@ $can_preview = ($is_video || $is_image || $is_pdf || $is_audio || in_array($ext,
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
             font-size: 15px;
-            font-weight: 700;
+            font-weight: 750;
             border: none;
             border-radius: 14px;
             cursor: pointer;
             text-decoration: none;
-            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
-            transition: all 0.2s ease;
+            box-shadow: 0 10px 28px rgba(37, 99, 235, 0.4);
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .btn-download-primary:hover {
+        .btn-main-download:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5);
+            box-shadow: 0 14px 34px rgba(37, 99, 235, 0.55);
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
 
-        .btn-preview-secondary {
+        .secondary-actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-sub-action {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            width: 100%;
-            padding: 13px 24px;
-            background: #17284d;
-            color: #93c5fd;
-            font-size: 14px;
+            padding: 11px 16px;
+            background: #112040;
+            border: 1px solid #1f3768;
+            color: #cbd5e1;
+            font-size: 13px;
             font-weight: 650;
-            border: 1px solid #294073;
-            border-radius: 14px;
-            cursor: pointer;
+            border-radius: 12px;
             text-decoration: none;
+            cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .btn-preview-secondary:hover {
-            background: #1e3566;
+        .btn-sub-action:hover {
+            background: #1a3060;
             color: #ffffff;
             border-color: #3b82f6;
         }
 
-        /* MEDIA PREVIEW EMBED */
-        .media-preview-box {
-            margin: 20px 0;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #060d1d;
-            border: 1.5px solid #1e3360;
+        /* ERROR / EXPIRED CARD */
+        .expired-card-content {
+            text-align: center;
+            padding: 24px 10px;
         }
 
-        .media-preview-box video {
-            width: 100%;
-            max-height: 280px;
-            display: block;
-            outline: none;
-        }
-
-        .media-preview-box img {
-            width: 100%;
-            max-height: 280px;
-            object-fit: contain;
-            display: block;
-        }
-
-        /* ERROR / EXPIRED STATES */
-        .error-card {
-            border-color: rgba(239, 68, 68, 0.35);
-            background: #1a0f1d;
-        }
-
-        .error-icon {
-            font-size: 56px;
+        .expired-icon {
+            font-size: 58px;
             margin-bottom: 16px;
+            display: inline-block;
         }
 
-        .error-title {
+        .expired-title {
             font-size: 22px;
-            font-weight: 750;
-            color: #f87171;
-            margin-bottom: 12px;
+            font-weight: 800;
+            color: #fda4af;
+            margin-bottom: 10px;
         }
 
-        .error-desc {
+        .expired-desc {
             font-size: 14px;
             color: #cbd5e1;
             line-height: 1.6;
-            margin-bottom: 28px;
+            margin-bottom: 26px;
+            max-width: 440px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .btn-home {
+        .btn-return-home {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 24px;
-            background: #26385e;
+            padding: 12px 26px;
+            background: #172d5c;
+            border: 1px solid #284c94;
             color: #ffffff;
             border-radius: 12px;
-            text-decoration: none;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 650;
+            text-decoration: none;
             transition: all 0.2s ease;
         }
 
-        .btn-home:hover {
-            background: #3b82f6;
+        .btn-return-home:hover {
+            background: #2563eb;
+            border-color: #2563eb;
         }
 
-        .footer-note {
+        .page-footer-note {
             text-align: center;
             margin-top: 24px;
-            font-size: 12px;
-            color: var(--text-muted);
+            font-size: 12.5px;
+            color: var(--text-sub);
         }
 
-        .footer-note a {
+        .page-footer-note a {
             color: #60a5fa;
             text-decoration: none;
+            font-weight: 600;
+        }
+
+        .page-footer-note a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-<div class="share-container">
-    <!-- BRAND HEADER -->
-    <div class="brand-header">
-        <a href="login.php" class="brand-logo">
-            <img src="assets/images/icon-192.png" alt="Secure Locker" class="brand-logo-img">
-            <span class="brand-title">Secure Locker</span>
-        </a>
-    </div>
+<div class="share-wrapper">
+    <!-- BRAND NAVIGATION -->
+    <a href="login.php" class="brand-nav">
+        <img src="assets/images/icon-192.png" alt="Secure Locker" class="brand-nav-logo">
+        <span class="brand-nav-title">Secure Locker</span>
+    </a>
 
     <?php if ($error_type): ?>
         <!-- ERROR / EXPIRED CARD -->
-        <div class="share-card error-card">
-            <div class="error-icon">
-                <?php echo ($error_type === 'expired' || $error_type === 'limit_reached') ? '⏱️' : '🔒'; ?>
-            </div>
-            <h2 class="error-title">
-                <?php 
-                if ($error_type === 'expired') echo "Link Expired";
-                elseif ($error_type === 'limit_reached') echo "Download Limit Reached";
-                else echo "Access Denied";
-                ?>
-            </h2>
-            <p class="error-desc"><?php echo htmlspecialchars($error_message); ?></p>
+        <div class="share-card-container" style="border-color: rgba(244, 63, 94, 0.35);">
+            <div class="expired-card-content">
+                <span class="expired-icon">
+                    <?php echo ($error_type === 'expired' || $error_type === 'limit_reached') ? '⏱️' : '🔒'; ?>
+                </span>
+                <h2 class="expired-title">
+                    <?php 
+                    if ($error_type === 'expired') echo "Temporary Link Expired";
+                    elseif ($error_type === 'limit_reached') echo "Download Limit Reached";
+                    else echo "Access Restricted";
+                    ?>
+                </h2>
+                <p class="expired-desc"><?php echo htmlspecialchars($error_message); ?></p>
 
-            <a href="login.php" class="btn-home">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                <span>Go to Secure Locker</span>
-            </a>
+                <a href="login.php" class="btn-return-home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span>Back to Secure Locker</span>
+                </a>
+            </div>
         </div>
     <?php else: ?>
         <!-- ACTIVE SHARE CARD -->
-        <div class="share-card">
-            <!-- EXPIRATION COUNTDOWN TIMER -->
-            <div class="countdown-banner" id="countdownBanner">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span>Link Expires In: <strong id="countdownText">--:--</strong></span>
+        <div class="share-card-container">
+            <!-- TOP STATUS BAR (ENCRYPTION + LIVE TIMER) -->
+            <div class="card-status-bar">
+                <div class="security-badge-tag">
+                    <span class="pulse-dot"></span>
+                    <span>AES-256 Encrypted Stream</span>
+                </div>
+
+                <div class="timer-badge-tag" id="timerBadge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>Expires in <strong id="timerCountdown">--:--</strong></span>
+                </div>
             </div>
 
-            <!-- FILE DETAILS -->
-            <div class="file-icon-wrap">
-                <?php 
-                if ($is_video) echo '🎬';
-                elseif ($is_image) echo '🖼️';
-                elseif ($is_pdf) echo '📄';
-                elseif ($is_audio) echo '🎵';
-                else echo '📁';
-                ?>
+            <!-- FILE INFO HEADER -->
+            <div class="file-info-header">
+                <div class="file-type-avatar">
+                    <?php 
+                    if ($is_video) echo '🎬';
+                    elseif ($is_image) echo '🖼️';
+                    elseif ($is_pdf) echo '📄';
+                    elseif ($is_audio) echo '🎵';
+                    else echo '📁';
+                    ?>
+                </div>
+                <div class="file-info-text">
+                    <h1 class="file-info-title"><?php echo htmlspecialchars($share['file_name']); ?></h1>
+                    <div class="file-info-meta">
+                        <span class="meta-chip"><?php echo strtoupper($ext ?: 'FILE'); ?></span>
+                        <span><?php echo formatFileSize($share['file_size']); ?></span>
+                        <span>&bull;</span>
+                        <span>Shared by <strong><?php echo htmlspecialchars($share['owner_name']); ?></strong></span>
+                    </div>
+                </div>
             </div>
 
-            <h1 class="file-name"><?php echo htmlspecialchars($share['file_name']); ?></h1>
-
-            <div class="file-meta-row">
-                <span class="meta-pill"><?php echo strtoupper($ext ?: 'FILE'); ?></span>
-                <span class="meta-pill"><?php echo formatFileSize($share['file_size']); ?></span>
-                <span>Shared by <strong><?php echo htmlspecialchars($share['owner_name']); ?></strong></span>
-            </div>
-
-            <!-- INLINE MEDIA PREVIEW IF VIDEO OR IMAGE -->
-            <?php if ($is_video): ?>
-                <div class="media-preview-box">
+            <!-- MEDIA SHOWCASE (FOR IMAGES / VIDEOS) -->
+            <?php if ($is_image): ?>
+                <div class="media-showcase-canvas">
+                    <img src="share.php?token=<?php echo urlencode($token); ?>&view=1" alt="<?php echo htmlspecialchars($share['file_name']); ?>">
+                </div>
+            <?php elseif ($is_video): ?>
+                <div class="media-showcase-canvas">
                     <video controls autoplay playsinline preload="metadata">
                         <source src="share.php?token=<?php echo urlencode($token); ?>&view=1" type="video/mp4">
                         Your browser does not support HTML5 video.
                     </video>
                 </div>
-            <?php elseif ($is_image): ?>
-                <div class="media-preview-box">
-                    <img src="share.php?token=<?php echo urlencode($token); ?>&view=1" alt="<?php echo htmlspecialchars($share['file_name']); ?>">
+            <?php endif; ?>
+
+            <!-- SELF DESTRUCT WARNING (IF 1-TIME ACCESS) -->
+            <?php if ($share['max_downloads'] === 1): ?>
+                <div class="burn-banner">
+                    <span>🔥</span>
+                    <span><strong>1-Time Download Link:</strong> This file link will permanently self-destruct once downloaded.</span>
                 </div>
             <?php endif; ?>
 
-            <!-- SECURITY BADGE -->
-            <div class="security-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <span>Encrypted with AES-256 &bull; Decrypted on-the-fly</span>
-            </div>
-
             <!-- ACTION BUTTONS -->
-            <div class="actions-group">
-                <a href="share.php?token=<?php echo urlencode($token); ?>&download=1" class="btn-download-primary">
+            <div class="card-actions-layout">
+                <a href="share.php?token=<?php echo urlencode($token); ?>&download=1" class="btn-main-download">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width: 18px; height: 18px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     <span>Download Decrypted File (<?php echo formatFileSize($share['file_size']); ?>)</span>
                 </a>
 
-                <?php if ($can_preview && !$is_video && !$is_image): ?>
-                    <a href="share.php?token=<?php echo urlencode($token); ?>&view=1" target="_blank" class="btn-preview-secondary">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        <span>Preview in Browser</span>
-                    </a>
-                <?php endif; ?>
+                <div class="secondary-actions-row">
+                    <?php if ($can_preview): ?>
+                        <a href="share.php?token=<?php echo urlencode($token); ?>&view=1" target="_blank" class="btn-sub-action">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <span>Open Original View</span>
+                        </a>
+                    <?php endif; ?>
+
+                    <button type="button" class="btn-sub-action" id="copySharePageBtn" onclick="copyCurrentShareUrl()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Copy Link</span>
+                    </button>
+                </div>
             </div>
         </div>
     <?php endif; ?>
 
-    <div class="footer-note">
+    <div class="page-footer-note">
         Protected by <a href="login.php">Secure Locker</a> &bull; Zero-Knowledge Cloud Storage
     </div>
 </div>
@@ -550,27 +644,27 @@ $can_preview = ($is_video || $is_image || $is_pdf || $is_audio || in_array($ext,
 <script>
     // Live Countdown Timer
     let secondsLeft = <?php echo intval($share['seconds_left']); ?>;
-    const countdownText = document.getElementById('countdownText');
-    const countdownBanner = document.getElementById('countdownBanner');
+    const timerCountdown = document.getElementById('timerCountdown');
+    const timerBadge = document.getElementById('timerBadge');
 
     function updateCountdown() {
         if (secondsLeft <= 0) {
-            countdownText.textContent = "Expired";
-            if (countdownBanner) {
-                countdownBanner.classList.add('urgent');
-                countdownBanner.innerHTML = '<span>⚠️ Link has expired. Refreshing...</span>';
+            timerCountdown.textContent = "00:00";
+            if (timerBadge) {
+                timerBadge.classList.add('urgent');
+                timerBadge.innerHTML = '<span>⚠️ Link Expired</span>';
             }
-            setTimeout(() => { location.reload(); }, 1500);
+            setTimeout(() => { location.reload(); }, 1200);
             return;
         }
 
         const mins = Math.floor(secondsLeft / 60);
         const secs = secondsLeft % 60;
         const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        countdownText.textContent = formatted;
+        timerCountdown.textContent = formatted;
 
-        if (secondsLeft <= 120 && countdownBanner) {
-            countdownBanner.classList.add('urgent');
+        if (secondsLeft <= 120 && timerBadge) {
+            timerBadge.classList.add('urgent');
         }
 
         secondsLeft--;
@@ -578,6 +672,18 @@ $can_preview = ($is_video || $is_image || $is_pdf || $is_audio || in_array($ext,
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
+    function copyCurrentShareUrl() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            const btn = document.getElementById('copySharePageBtn');
+            if (btn) {
+                btn.innerHTML = '<span>✅ Link Copied!</span>';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Copy Link</span>';
+                }, 2200);
+            }
+        });
+    }
 </script>
 <?php endif; ?>
 
