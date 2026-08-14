@@ -317,76 +317,6 @@ $avatar_collections = [
                     </div>
                 </div>
             </div>
-
-            <!-- SECURITY & COMPLIANCE BADGES -->
-            <div class="sl-profile-card">
-                <div class="card-section-header">
-                    <h4>Vault Security &amp; Protection</h4>
-                </div>
-                <div class="profile-security-list">
-                    <div class="sec-item">
-                        <div class="sec-dot active"></div>
-                        <div class="sec-info">
-                            <strong>AES-256 Zero-Knowledge</strong>
-                            <small>Encrypted at rest on disk</small>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-dot active"></div>
-                        <div class="sec-info">
-                            <strong>Gmail OTP 2-Step Recovery</strong>
-                            <small>15-minute expiring tokens</small>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-dot active"></div>
-                        <div class="sec-info">
-                            <strong>CSRF &amp; HttpOnly Guard</strong>
-                            <small>Session hijacking protection</small>
-                        </div>
-                    </div>
-                    <div class="sec-item">
-                        <div class="sec-dot active"></div>
-                        <div class="sec-info">
-                            <strong>PWA Offline Enabled</strong>
-                            <small>Service worker caching active</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- QUICK VAULT SHORTCUTS -->
-            <div class="sl-profile-card">
-                <div class="card-section-header">
-                    <h4>Quick Vault Shortcuts</h4>
-                </div>
-                <div class="profile-shortcuts-grid">
-                    <a href="dashboard.php?section=upload" class="prof-quick-link">
-                        <div class="pql-icon blue">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" style="width: 18px; height: 18px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                        </div>
-                        <span class="pql-label">Upload Files</span>
-                    </a>
-                    <a href="dashboard.php?section=favorites" class="prof-quick-link">
-                        <div class="pql-icon yellow">
-                            <svg viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1" style="width: 18px; height: 18px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                        </div>
-                        <span class="pql-label">Favorites</span>
-                    </a>
-                    <a href="dashboard.php?section=settings" class="prof-quick-link">
-                        <div class="pql-icon purple">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" style="width: 18px; height: 18px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        </div>
-                        <span class="pql-label">Appearance</span>
-                    </a>
-                    <a href="dashboard.php?section=settings#recycle" class="prof-quick-link">
-                        <div class="pql-icon red">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </div>
-                        <span class="pql-label">Recycle Bin</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
         <!-- RIGHT COLUMN: STRUCTURED FORMS -->
@@ -610,23 +540,34 @@ $avatar_collections = [
    STRUCTURED USER PROFILE STYLING
 ========================================================= */
 .sl-profile-layout {
+    width: 100%;
     max-width: 100%;
     margin: 0;
 }
 
 .sl-profile-layout .sl-page-header {
-    max-width: 1240px;
-    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 24px 0;
 }
 
 .sl-profile-grid {
     display: grid;
-    grid-template-columns: 360px minmax(500px, 860px);
-    max-width: 1240px;
-    gap: 26px;
+    grid-template-columns: 340px 1fr;
+    width: 100%;
+    max-width: 100%;
+    gap: 28px;
     align-items: start;
-    justify-content: start;
+    justify-content: stretch;
     margin: 0;
+}
+
+.sl-profile-left-col {
+    width: 100%;
+}
+
+.sl-profile-right-col {
+    width: 100%;
 }
 
 /* CARDS */
@@ -919,126 +860,6 @@ body.dark-theme .detail-label {
 
 body.dark-theme .detail-val {
     color: #f1f5f9;
-}
-
-/* SECURITY BADGES LIST */
-.profile-security-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.sec-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 12px;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-}
-
-body.dark-theme .sec-item {
-    background: #1e293b;
-    border-color: #334155;
-}
-
-.sec-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #10b981;
-    margin-top: 5px;
-    flex-shrink: 0;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-}
-
-.sec-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.sec-info strong {
-    font-size: 13px;
-    font-weight: 650;
-    color: #0f172a;
-}
-
-body.dark-theme .sec-info strong {
-    color: #f1f5f9;
-}
-
-.sec-info small {
-    font-size: 11.5px;
-    color: #64748b;
-}
-
-body.dark-theme .sec-info small {
-    color: #94a3b8;
-}
-
-/* QUICK SHORTCUTS GRID */
-.profile-shortcuts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.prof-quick-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px 10px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-body.dark-theme .prof-quick-link {
-    background: #1e293b;
-    border-color: #334155;
-}
-
-.prof-quick-link:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
-    border-color: #3b82f6;
-}
-
-.pql-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pql-icon.blue { background: #dbeafe; }
-body.dark-theme .pql-icon.blue { background: #1e3a8a; }
-
-.pql-icon.yellow { background: #fef3c7; }
-body.dark-theme .pql-icon.yellow { background: #451a03; }
-
-.pql-icon.purple { background: #ede9fe; }
-body.dark-theme .pql-icon.purple { background: #3b2866; }
-
-.pql-icon.red { background: #fee2e2; }
-body.dark-theme .pql-icon.red { background: #450a0a; }
-
-.pql-label {
-    font-size: 12px;
-    font-weight: 650;
-    color: #334155;
-}
-
-body.dark-theme .pql-label {
-    color: #cbd5e1;
 }
 
 /* RIGHT COLUMN FORMS */
