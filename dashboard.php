@@ -1188,6 +1188,25 @@ function toggleFavorite(fileId) {
         .catch(error => console.error('Error toggling favorite:', error));
 }
 
+// Card 3-Dots Dropdown Menu Toggle
+function toggleCardMenu(e, btn) {
+    e.stopPropagation();
+    const menuWrap = btn.closest('.sl-card-menu-wrap');
+    const menu = menuWrap ? menuWrap.querySelector('.sl-card-dropdown-menu') : null;
+    if (!menu) return;
+
+    const isShown = menu.classList.contains('show');
+
+    // Close all open card dropdowns
+    document.querySelectorAll('.sl-card-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('.sl-btn-card-dots.active').forEach(b => b.classList.remove('active'));
+
+    if (!isShown) {
+        menu.classList.add('show');
+        btn.classList.add('active');
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Apply saved theme mode
@@ -1231,6 +1250,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Close all card dropdown menus when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.sl-card-menu-wrap')) {
+            document.querySelectorAll('.sl-card-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            document.querySelectorAll('.sl-btn-card-dots.active').forEach(b => b.classList.remove('active'));
+        }
+    });
+
     // Close preview modal on clicking backdrop
     const previewModal = document.getElementById('slFilePreviewModal');
     if (previewModal) {
@@ -1251,13 +1278,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Close drawers / dropdown / preview modal / share modal on Escape key
+    // Close drawers / dropdown / preview modal / share modal / card menus on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeFilePreviewModal();
             closeShareModal();
             closeAllDrawers();
             closeUserDropdown();
+            document.querySelectorAll('.sl-card-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            document.querySelectorAll('.sl-btn-card-dots.active').forEach(b => b.classList.remove('active'));
         }
     });
 });

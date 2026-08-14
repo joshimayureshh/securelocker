@@ -626,17 +626,14 @@ $can_preview = ($is_video || $is_image || $is_pdf || $is_audio || in_array($ext,
                         </a>
                     <?php endif; ?>
 
-                    <button type="button" class="btn-sub-action" id="copySharePageBtn" onclick="copyCurrentShareUrl()">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        <span>Copy Link</span>
-                    </button>
+                   
                 </div>
             </div>
         </div>
     <?php endif; ?>
 
     <div class="page-footer-note">
-        Protected by <a href="login.php">Secure Locker</a> &bull; Zero-Knowledge Cloud Storage
+        Protected by <a href="login.php">Secure Locker </a> &bull;
     </div>
 </div>
 
