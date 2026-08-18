@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode
+.idea
+uploads/*
+!uploads/.gitkeep
+logs/*
+!logs/.gitkeep
+scratch/
+test_smtp.php
+*.tmp
+*.bak
+Secure_Locker_Complete_System_Architecture_and_Guide.pdf
+Secure_Locker_Documentation.html

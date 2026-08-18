@@ -1,46 +1,64 @@
 <?php
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_PORT', '5432');
-define('DB_NAME', 'secure_locker');
-define('DB_USER', 'postgres');
-define('DB_PASS', '1234');
+// Database configuration with environment variable support for cloud deployment (Render, Docker, VPS)
+$database_url = getenv('DATABASE_URL');
+if ($database_url) {
+    $db_parts = parse_url($database_url);
+    define('DB_HOST', $db_parts['host'] ?? 'localhost');
+    define('DB_PORT', (string)($db_parts['port'] ?? '5432'));
+    define('DB_NAME', ltrim($db_parts['path'] ?? 'secure_locker', '/'));
+    define('DB_USER', $db_parts['user'] ?? 'postgres');
+    define('DB_PASS', $db_parts['pass'] ?? '1234');
+} else {
+    define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+    define('DB_PORT', getenv('DB_PORT') ?: '5432');
+    define('DB_NAME', getenv('DB_NAME') ?: 'secure_locker');
+    define('DB_USER', getenv('DB_USER') ?: 'postgres');
+    define('DB_PASS', getenv('DB_PASS') ?: '1234');
+}
 
 // File upload configuration
 define('MAX_FILE_SIZE', 100 * 1024 * 1024); // 100MB
-define('UPLOAD_DIR', __DIR__ . '/uploads');
+define('UPLOAD_DIR', getenv('UPLOAD_DIR') ?: (__DIR__ . '/uploads'));
 
 // Gmail SMTP Configuration for Password Recovery OTP
-define('SMTP_ENABLED', true); // Set to TRUE after adding your Gmail App Password
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USER', 'joshimayu62@gmail.com'); // Put your real Gmail address here
-define('SMTP_PASS', 'liqb epsa zpty pqgc'); // Put your 16-character Google App Password here
-define('SMTP_FROM_EMAIL', 'joshimayu62@gmail.com');
-define('SMTP_FROM_NAME', 'Secure Locker');
+define('SMTP_ENABLED', true);
+define('SMTP_HOST', getenv('SMTP_HOST') ?: 'smtp.gmail.com');
+define('SMTP_PORT', (int)(getenv('SMTP_PORT') ?: 587));
+define('SMTP_USER', getenv('SMTP_USER') ?: 'joshimayu62@gmail.com');
+define('SMTP_PASS', getenv('SMTP_PASS') ?: 'liqb epsa zpty pqgc');
+define('SMTP_FROM_EMAIL', getenv('SMTP_FROM_EMAIL') ?: 'joshimayu62@gmail.com');
+define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'Secure Locker');
 
-// Linux-optimized settings
-define('UPLOAD_DIR_PERMISSIONS', 0755); // Secure permissions for Linux
+// Linux & Cloud-optimized settings
+define('UPLOAD_DIR_PERMISSIONS', 0755);
 define('LOG_FILE', __DIR__ . '/logs/app.log');
 
 // Create uploads directory if it doesn't exist with proper permissions
 if (!file_exists(UPLOAD_DIR)) {
-    mkdir(UPLOAD_DIR, UPLOAD_DIR_PERMISSIONS, true);
-    chmod(UPLOAD_DIR, UPLOAD_DIR_PERMISSIONS);
+    @mkdir(UPLOAD_DIR, UPLOAD_DIR_PERMISSIONS, true);
+    @chmod(UPLOAD_DIR, UPLOAD_DIR_PERMISSIONS);
 }
 
 // Create logs directory
 $log_dir = dirname(LOG_FILE);
 if (!file_exists($log_dir)) {
-    mkdir($log_dir, 0755, true);
+    @mkdir($log_dir, 0755, true);
 }
+
+// Detect HTTPS automatically (including Render reverse proxy)
+$isSecure = (
+    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+    (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+    (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) ||
+    getenv('RENDER') !== false
+);
 
 // Start session with long lifetime
 session_name('SECURE_LOCKER');
 session_set_cookie_params([
     'lifetime' => 86400 * 30, // 30 days
     'path' => '/',
-    'secure' => false, // Set to true if using HTTPS
+    'secure' => $isSecure,
     'httponly' => true,
     'samesite' => 'Lax'
 ]);
